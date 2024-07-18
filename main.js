@@ -234,6 +234,10 @@ for (const del of rowToDelete) {
     })
 }
 
+
+
+// The following code implements the Edit Row Logic:
+
 let editBtn = document.getElementsByClassName("edit")
 let currRow = null;
 
@@ -263,16 +267,8 @@ editAll();
 
 let editForm = document.getElementById("formEdit");
 
-let editToastFlag = true;
 const editToast = document.getElementById('editToast')
 const editToastBootstrap = bootstrap.Toast.getOrCreateInstance(editToast)
-let editToastTrigger = document.getElementById("save")
-editToastTrigger.addEventListener('click', () => {
-    if (editToastFlag) {
-        editToastBootstrap.show()
-    }
-    editToastFlag = false;
-})
 
 let editFormModal = new bootstrap.Modal(document.getElementById("editForm"));
 let link = null;
@@ -295,10 +291,19 @@ editForm.addEventListener("submit", (e) => {
     ef.set("duration",`${ef.get("hours").padStart(2, "0")} Hours ${ef.get("mins").padStart(2, "0")} Minutes`);
     handleFormData(ef,true);
     editFormModal.hide();
+    editToastBootstrap.show()
 
 })
 
 
+
+
+// All API Handling Code is here:
+
+
+
+// A function to Handle POST API calls i.e. when ever a new topic/row is added in the ui
+// This function gets called and executes and sends data to Server
 async function handleFormData(formData, updateData) {
     // Creating a new object to hold the form data
     const data = {
@@ -321,7 +326,7 @@ async function handleFormData(formData, updateData) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data); // Handle success
+        console.log(data); // Handling success
     })
     .catch(error => {
         console.error('Error:', error); // Handling error
