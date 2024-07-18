@@ -1,10 +1,3 @@
-//This is the utility function which opens the overlay to add the topics
-
-
-//Toggle to open and close the Overlay
-
-
-//Overlay Close button
 
 function generateRandomId() {
     return Math.floor(Math.random() * Date.now());
@@ -63,6 +56,10 @@ function handleForm(event) {
     toastBootstrap.show()
 
 }
+
+
+
+
 form.addEventListener('submit', handleForm);
 
 let view = document.getElementById("view")
