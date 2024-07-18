@@ -54,6 +54,8 @@ function handleForm(event) {
                                 </div>
                                 </td>
                                 </tr>`;
+    const newRow = document.getElementById(`${fd.get("id")}`)
+    observeClassChange(newRow)
     editAll();
     checkBoxChecking();
     addTopicModal.hide();
@@ -237,7 +239,6 @@ for (const del of rowToDelete) {
 
 let editBtn = document.getElementsByClassName("edit")
 let currRow = null;
-//let row = null;
 
 
 function editRow(e) {
@@ -302,7 +303,7 @@ editForm.addEventListener("submit", (e) => {
 
 
 async function handleFormData(formData, updateData) {
-    // Create a new object to hold the form data
+    // Creating a new object to hold the form data
     const data = {
         Topic: formData.get('topic'),
         Duration: formData.get('duration'),
@@ -311,11 +312,9 @@ async function handleFormData(formData, updateData) {
         Status: formData.get("status")
     };
 
-    // Determine the appropriate URL and HTTP method
     const url = 'http://localhost:3000/api/topics';
     const method = updateData ? 'PUT' : 'POST';
     console.log(data)
-    // Send the data to the server
     await fetch(url, {
         method: method,
         headers: {
@@ -326,10 +325,9 @@ async function handleFormData(formData, updateData) {
     .then(response => response.json())
     .then(data => {
         console.log(data); // Handle success
-        // Reload topics to reflect changes
     })
     .catch(error => {
-        console.error('Error:', error); // Handle error
+        console.error('Error:', error); // Handling error
     });
 }
 
@@ -351,11 +349,13 @@ async function loadTopics() {
         const topics = await response.json();
         
         const tableBody = document.getElementById('table-body');
-        tableBody.innerHTML = ''; // Clear existing rows
+        tableBody.innerHTML = ''; 
 
         topics.forEach(topic => {
             const row = document.createElement('tr');
-            row.className = 'show';
+            console.log(topic)
+            console.log(topic.status)
+            row.className = (topic.status)? 'show': 'hide';
             row.id = topic.id;
 
             row.innerHTML = `
@@ -372,19 +372,61 @@ async function loadTopics() {
                     </div>
                 </td>
             `;
-
+            observeClassChange(row);
             tableBody.appendChild(row);
         });
     } catch (error) {
         console.error('Error loading topics:', error);
+    } finally {
+        viewChanger();
+        checkBoxChecking();
     }
-}
-
-// Helper function to format the duration
-function formatDuration(duration) {
-    const [hours, mins] = duration.split(' ');
-    return `${hours.padStart(2, '0')} Hours ${mins.padStart(2, '0')} Minutes`;
 }
 
 // Call loadTopics when the page loads
 document.addEventListener('DOMContentLoaded', loadTopics);
+
+// Function to handle class change
+function handleClassChange(mutationsList, observer) {
+    for (let mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            const target = mutation.target;
+            console.log('Class changed for', target);
+            const newClass = target.className;
+            if(newClass == "hide") statusChange(target.id,false)
+            else if(newClass == "show") statusChange(target.id,true)
+        }
+    }
+}
+
+// Function to observe class changes on a specific element
+function observeClassChange(element) {
+    const observer = new MutationObserver(handleClassChange);
+    observer.observe(element, { attributes: true, attributeFilter: ['class'] });
+}
+
+// Function to observe all rows
+function observeAllRows() {
+    const rows = document.querySelectorAll('tr');
+    rows.forEach(row => observeClassChange(row));
+}
+async function statusChange(rowId, newStatus) {
+    try {
+        const response = await fetch('http://localhost:3000/api/topics/status', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: rowId, status: newStatus })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update status');
+        }
+
+        const updatedTopic = await response.json();
+        console.log('Status updated:', updatedTopic);
+    } catch (error) {
+        console.error('Error updating status:', error);
+    }
+}

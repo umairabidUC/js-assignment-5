@@ -41,6 +41,21 @@ const updateTopic = async (req, res) => {
   }
 };
 
+// Update the status of a topic
+const updateStatus = async (req, res) => {
+  const { id, status } = req.body;
+  try {
+    const result = await pool.query(
+      'UPDATE topics SET status = $1 WHERE id = $2 RETURNING *',
+      [status, id]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Error updating status:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Delete a topic
 const deleteTopic = async (req, res) => {
   const { id } = req.params;
@@ -57,5 +72,6 @@ module.exports = {
   getAllTopics,
   addTopic,
   updateTopic,
+  updateStatus,
   deleteTopic,
 };
